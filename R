@@ -1,0 +1,154 @@
+###### By Ahmed Cherif##
+
+#Lib#
+library(sp)
+library(tmap)
+library(tmaptools)
+library(raster)
+library(ncdf4)
+library(sf)
+library(RColorBrewer)
+
+alt  =getData("alt", country = "Tunisia", path = tempdir())  
+plot(alt)
+crs(alt)
+crs(alt) <- "+proj=utm + zone=33"
+crs(alt) <- "+proj=longlat + datum=WG84 + no_defs"
+crs(alt)
+
+e <- as(extent(6, 19, 36, 48), 'SpatialPolygons')
+crs(e) <- "+proj=utm + zone=33"
+alt <- crop(alt, e )
+
+library(raster)
+utm_crs <- "+proj=utm +zone=33 +datum=WGS84 +units=m +no_defs"
+
+# Assign the UTM projection to the 'alt' raster
+crs(alt) <- utm_crs
+
+slope <- terrain(alt, opt = "slope")
+plot(slope)
+
+slope = terrain(alt, opt = "slope")
+
+library(tmap)
+tmap_mode("plot")
+
+aspect <- terrain(alt, opt = "aspect")
+plot(aspect)
+
+
+hill = hillShade(slope, aspect, angle = 40, direction = 270)
+plot(hill)
+
+
+map3 <- tmap_style("cobalt") +
+  tm_shape(slope, name = "Slope", title = "Slope") +
+  tm_raster(
+    title = "Slope (0°-90°)",
+    palette = "Set1",
+    breaks = c(0, 15, 30, 45, 60, 90),  # Adjust the break values
+    labels = c("nearly flat", "gentle", "moderate", "strong", "very strong"),
+    legend.show = TRUE,
+    legend.hist = TRUE,
+    legend.hist.z = 0
+  ) +
+  tm_scale_bar(
+    width = 0.25,
+    text.size = 0.5,
+    text.color = "darkgoldenrod1",
+    color.dark = "lightsteelblue4",
+    color.light = "white",
+    position = c("left", "bottom"),
+    lwd = 1
+  ) +
+  tm_compass(
+    type = "radar",
+    position = c("right", "bottom")
+  ) +
+  tm_layout(
+    scale = 0.8,
+    main.title = "Analyse du relief basée sur les données DEM de la Tunisie",
+    main.title.position = "center",
+    main.title.color = "black",
+    main.title.size = 0.8,
+    title = "Slope (0°-90°)",
+    title.color = "darkgoldenrod1",
+    title.size = 0.9,
+    title.position = c("left", "top"),
+    panel.labels = "De Ahmed Cherif",
+    panel.label.color = "darkslateblue",
+    legend.position = c("right", "top"),
+    legend.bg.color = "grey90",
+    legend.bg.alpha = 0.2,
+    legend.frame = "gray50",
+    legend.outside = FALSE,
+    legend.width = 0.3,
+    legend.height = 0.5,
+    legend.hist.height = 0.3,
+    legend.title.size = 0.9,
+    inner.margins = 0
+  ) +
+  tm_graticules(
+    ticks = TRUE,
+    lines = TRUE,
+    labels.rot = c(15, 15),
+    col = "azure4",
+    lwd = 1,
+    labels.size = 0.7)
+
+
+map1
+
+
+tmap_save(map1, "Tunisia_Slope.jpg", height = 7)
+
+
+
+
+map2 <- tmap_style("cobalt") +
+  tm_shape(aspect, name = "Aspect") +
+  tm_raster(
+    title = "Aspect (West-East-South-North)",
+    palette = "Spectral", legend.show = TRUE,
+    legend.hist = TRUE, style = "sd", 
+    legend.hist.z = 0) +
+  tm_scale_bar(
+    width = 0.25,
+    text.size = 0.5,
+    text.color = "darkgoldenrod1",
+    color.dark = "lightsteelblue4",
+    color.light = "white",
+    position = c("left","bottom"), lwd = 1) +
+  tm_compass(
+    type = "radar", position = c("right", "bottom")) +
+  tm_graticules(
+    ticks=TRUE, lines = TRUE, col="azure3", lwd = 1,
+    labels.rot = c(15, 15), labels.size = .7)+
+  tm_layout(
+    scale = 0.8,
+    main.title = "Terrain analysis based on DEM of Italy",
+    main.title.position = "center",
+    main.title.color = "black",
+    main.title.size = 0.8,
+    title = "Aspect (W-E-S-N)",
+    title.color = "darkgoldenrod1",
+    title.size = 0.9,
+    title.position = c("left", "top"),
+    panel.labels = c("Geographical analysis by Ahmed Cherif"),
+    panel.label.color = "darkslateblue",
+    legend.position = c("right", "top"),
+    legend.bg.color = "grey90",
+    legend.bg.alpha = .2,
+    legend.frame = "gray50",
+    legend.outside = FALSE,
+    legend.width = .35,
+    legend.height = .6,
+    legend.hist.height = .15,
+    legend.title.size = 0.9,
+    inner.margins = 0)
+
+map2    
+
+tmap_save(map2, "Tunisia_Slope.jpg", height = 7)
+
